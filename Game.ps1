@@ -32,8 +32,8 @@ function Start-MainForm {
 
     switch ($Difficulty) {
         # "Easy" { $Height = 10; $TileSize = 16 }
-        "Medium" { $Height = 15; $TileSize = 40; $MinesTotal = 100 }
-        "Hard" { $Height = 25; $TileSize = 30; $MinesTotal = 40 }
+        "Medium" { $Height = 15; $TileSize = 40; $MinesTotal = 40 }
+        "Hard" { $Height = 25; $TileSize = 30; $MinesTotal = 100 }
         Default { $Height = 10; $TileSize = 50; $MinesTotal = 10 }
     }
 
@@ -76,7 +76,7 @@ function Start-MainForm {
                 
             $Form.Controls.Add($Button)
         }
-        $global:AllFields += $Button
+        $global:AllFields += $Line
     }
     
     Set-Mines -AmountOfMines $MinesTotal
@@ -102,10 +102,12 @@ function Test-Field {
     )
 
     if ($Field.isMine) {
-        Invoke-Boom -InitialMine $Field
+        $Field.BackColor = [System.Drawing.Color]::Red
+        #Invoke-Boom -InitialMine $Field
     }
-
-    Uncover -Field
+    else {
+        $Field.BackColor = [System.Drawing.Color]::White
+    }
 
 }
 
@@ -115,7 +117,7 @@ function Set-Mines {
         [Parameter(Mandatory = $true)]
         $AmountOfMines
     )
-    $LastElement = $global:AllFields.Length - 1 
+    $LastElement = $global:AllFields.Count - 1 
     $RandomHistory = @()
     for ($i = 0; $i -lt $AmountOfMines; $i++) {
         do {
