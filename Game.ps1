@@ -42,7 +42,7 @@ function Start-MainForm {
     $Form.Height = ($Height * $TileSize) + 305
 
 
-    $global:AllFields = @()
+    $Global:AllFields = @()
 
     for ($y = 0; $y -lt $Height; $y++) {
         $Y_Pos = 5 + ($y * $TileSize)
@@ -76,12 +76,10 @@ function Start-MainForm {
                 
             $Form.Controls.Add($Button)
         }
-        $global:AllFields += $Line
+        $Global:AllFields += $Line
     }
     
     Set-Mines -AmountOfMines $MinesTotal
-
-    $global:AllFields | ForEach-Object { $_.isMine }
     $Zero_Y_Point = $Y_Pos + $TileSize
     
     $Restart_Button = New-Object System.Windows.Forms.Button
@@ -102,8 +100,8 @@ function Test-Field {
     )
 
     if ($Field.isMine) {
-        $Field.BackColor = [System.Drawing.Color]::Red
-        #Invoke-Boom -InitialMine $Field
+        Disable-AllButtons
+        Invoke-Boom -InitialMine $Field
     }
     else {
         $Field.BackColor = [System.Drawing.Color]::White
@@ -117,14 +115,14 @@ function Set-Mines {
         [Parameter(Mandatory = $true)]
         $AmountOfMines
     )
-    $LastElement = $global:AllFields.Count - 1 
+    $LastElement = $Global:AllFields.Count - 1 
     $RandomHistory = @()
     for ($i = 0; $i -lt $AmountOfMines; $i++) {
         do {
             $Random = Get-Random -Minimum 0 -Maximum $LastElement
         }
         while ($RandomHistory -contains $Random)
-        $SetMine = $global:AllFields[$Random]
+        $SetMine = $Global:AllFields[$Random]
         $SetMine.isMine = $true
         $RandomHistory += $Random
     }
@@ -134,9 +132,26 @@ function Invoke-Boom {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true)]
-        $InitialMine
+        [System.Windows.Forms.Button]$InitialMine
     )
-    $global:AllFields
+
+    $InitialMine.BackColor = [System.Drawing.Color]::Red
+    $Form.Update()
+    Start-Sleep 1.5
+
+    $ToBeBlownUp = $Global:AllFields | Where-Object { $_.isMine -eq $true }
+    ForEach ($Field in $ToBeBlownUp) {
+        $Field.BackColor = [System.Drawing.Color]::Red
+        $Form.Update()
+        Start-Sleep .5
+    }
+
+}
+
+function Disable-AllButtons {
+    ForEach ($Button in $Global:AllFields) {
+        $Button.Enabled = $false
+    }
 }
 
 
