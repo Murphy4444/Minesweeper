@@ -154,7 +154,7 @@ function Start-MainForm {
     
     $Global:Time = 0
 
-    $Global:Timer.Stop()
+    # $Global:Timer.Stop()
 
     $Global:Timer = New-Object System.Windows.Forms.Timer
     $Global:Timer.Interval = 1000
