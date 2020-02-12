@@ -28,6 +28,8 @@ function Start-MainForm {
         [string]$Difficulty
     )
 
+    $ScriptRoot = "C:\Users\vmadmin\OneDrive\Personal\ScriptingAndProgramming\PowerShell\Games\Minesweeper"
+    $ScriptRoot = "C:\Users\elias\OneDrive\Personal\ScriptingAndProgramming\PowerShell\Games\Minesweeper"
 
     switch ($Difficulty) {
         # "Easy" { $Height = 10; $TileSize = 16 }
@@ -37,9 +39,12 @@ function Start-MainForm {
     }
 
     $Global:Form = New-Object System.Windows.Forms.Form
-    $Global:Form.Width = ($Height * $TileSize) + 25
+    $Global:Form.Width = ($Height * $TileSize) + 30
     $Global:Form.Height = ($Height * $TileSize) + 150
-
+    $Global:Form.Icon = [System.Drawing.Icon]::ExtractAssociatedIcon("$ScriptRoot\Icons\mine.ico")
+    $Global:Form.Text = "Minesweeper"
+    $Global:Form.FormBorderStyle = 'Fixed3D'
+    $Global:Form.MaximizeBox = $false
     $Global:AllGoodFields = [Math]::Pow($Height, 2) - $MinesTotal
 
     $Global:AllFields = @()
@@ -69,10 +74,11 @@ function Start-MainForm {
             $Button | Add-Member -MemberType NoteProperty -Name "isFlagged" -Value $false
             $Button | Add-Member -MemberType NoteProperty -Name "Adjacent" -Value ""
             $Button | Add-Member -MemberType NoteProperty -Name "isUncovered" -Value $false
-            $Button | Add-Member -MemberType NoteProperty -Name "PrevColor" -Value $Color
+            # $Button | Add-Member -MemberType NoteProperty -Name "PrevColor" -Value $Color
             
             $Button.add_Click( {
                     Test-Field -Field $this -Height $Height
+                    $FlagsRemaining.Text = $Global:MinesTotal
                 })
 
             $Button.Add_MouseDown( {
@@ -80,11 +86,16 @@ function Start-MainForm {
                         if ($_.Button -eq [System.Windows.Forms.MouseButtons]::Right ) {
                             $this.isFlagged = $this.isFlagged -xor $true
                             if ($this.isFlagged) { 
-                                $this.BackColor = [System.Drawing.Color]::MediumPurple
+                                # $this.BackColor = [System.Drawing.Color]::MediumPurple
+                                # $Bitmap = new-object System.Drawing.Bitmap $TileSize, $TileSize
+                                # $NewImage = [System.Drawing.Graphics]::FromImage($Bitmap)
+                                $Image = [System.Drawing.Image]::FromFile("$ScriptRoot\Icons\flag$Difficulty.png")
+                                $this.Image = $Image
                                 $Global:MinesTotal--
                             }
                             else {
-                                $this.BackColor = [System.Drawing.Color]::($this.PrevColor)
+                                # $this.BackColor = [System.Drawing.Color]::($this.PrevColor)
+                                $this.Image = $null
                                 $Global:MinesTotal++
                             }
                             $FlagsRemaining.Text = $Global:MinesTotal
@@ -134,15 +145,17 @@ function Start-MainForm {
     
     $FlagColor = New-Object System.Windows.Forms.Label
     $FlagColor.Location = New-Object System.Drawing.Point(220, $Zero_Y_Point)
-    $FlagColor.Size = New-Object System.Drawing.Size(25, 25)    
-    $FlagColor.BackColor = [System.Drawing.Color]::MediumPurple
+    $FlagColor.Size = New-Object System.Drawing.Size(30, 30)    
+    # $FlagColor.BackColor = [System.Drawing.Color]::MediumPurple
+    $FlagImage = [System.Drawing.Image]::FromFile("$ScriptRoot\Icons\flagHard.png")
+    $FlagColor.BackgroundImage = $FlagImage
     $FlagColor.Text = ""
     $FlagColor.Font = [System.Drawing.Font]::new($Button.Font.FontFamily, 15)
     $Global:Form.Controls.Add($FlagColor)
 
     $FlagsRemaining = New-Object System.Windows.Forms.Label
     $FlagsRemaining.Location = New-Object System.Drawing.Point(250, $Zero_Y_Point)
-    $FlagsRemaining.Size = New-Object System.Drawing.Size(50, 25)
+    $FlagsRemaining.Size = New-Object System.Drawing.Size(50, 30)
     $FlagsRemaining.Text = $Global:MinesTotal
     $FlagsRemaining.Font = [System.Drawing.Font]::new($Button.Font.FontFamily, 15)
     $Global:Form.Controls.Add($FlagsRemaining)
@@ -238,6 +251,8 @@ function Invoke-Boom {
         }
     }
 
+    $ToBeBlownUp = $ToBeBlownUp | Sort-Object { Get-Random }
+
     ForEach ($Field in $ToBeBlownUp) {
         $Field.BackColor = [System.Drawing.Color]::Red
         Start-Sleep -Milliseconds 100
@@ -303,6 +318,13 @@ function Show-Field {
     $Field.BackColor = [System.Drawing.Color]::$Color
     $Field.Text = "$($Field.Adjacent)"
     $Field.isUncovered = $true 
+
+
+    if ($Field.isFlagged) {
+        $Field.isFlagged = $false
+        $Global:MinesTotal++
+    }
+
 
     $Global:AllGoodFields --
 
