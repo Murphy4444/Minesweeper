@@ -3,7 +3,7 @@
 Minesweeper Game
 
 .NOTES
-Author:         GKE
+Author:         Murphy4444
 Creation Date:  01.02.2020
 Creation Time:  23:15
 
